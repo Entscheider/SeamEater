@@ -1,5 +1,5 @@
 # Seameater
-Seameater is a python program implementing some algorithm, which are described on [this]( ftp://ftp1.idc.ac.il/Arik_shamir/SCweb/imret/index.html) site and the paper about Seam Carving. E.g.
+Seameater is a python program implementing some algorithm, which are described on [this](http://www.faculty.idc.ac.il/arik/SCWeb/imret/) site and the paper about Seam Carving. E.g.
 
 - Remove objects seamlessly in picture by decreasing the picture size
 - Remove objects in the gradient domain (need a lot of memory)

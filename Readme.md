@@ -14,11 +14,11 @@ Then go to the source directory and run `python2 main.py`.
 
 ## Screenshots
 * Enlarge image
-![](raw/master/pic/screenshot/screenshot_add.png)
+![](https://raw.githubusercontent.com/Entscheider/SeamEater/master/pic/screenshot/screenshot_add.png)
 * Remove Content
-![](raw/master/pic/screenshot/screenshot_remove.png)
+![](https://raw.githubusercontent.com/Entscheider/SeamEater/master/pic/screenshot/Screenshot_remove.png)
 * Amplify content
-![](raw/master/pic/screenshot/screenshot_content_amplification.png)
+![](https://raw.githubusercontent.com/Entscheider/SeamEater/master/pic/screenshot/screenshot_content_amplification.png)
 
 ## License
 The code is licenses under GPLv3.

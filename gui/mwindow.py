@@ -8,8 +8,8 @@ except:
 
     qtver = 4
     guig = gui
-from imgshowwdg import ImgShowWdg
-from actionWdg import ActionWdg
+from gui.imgshowwdg import ImgShowWdg
+from gui.actionWdg import ActionWdg
 import numpy as np
 
 from scipy.misc import imsave as imwrite
@@ -38,7 +38,7 @@ class MainWindow(gui.QMainWindow):
         return self.__energyFunctions
 
     def setEnergyFactoryMap(self, map):
-        self.__energyFunctions = map.values()
+        self.__energyFunctions = list(map.values())
         for key in map:
             val = map[key]
             self.__choosenFunctionBox.addItem(key, val)

@@ -65,6 +65,7 @@ export = {
     "L2Gradient": l2gradientFunc, 
     'Laplace': laplaceFunc
     }
+
 if withCV2:
     export['Corner Harris'] = cornerHarrisFunc
     export['Pre-Corner-Detect'] = preCornerDetectFunc

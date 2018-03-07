@@ -9,7 +9,7 @@ def makeGray(img):
     img_g = img
     if (np.ndim(img) == 3):
         img_g = img[:, :, 1]
-        for p in xrange(1, img.shape[2]):
+        for p in range(1, img.shape[2]):
             img_g = img_g + img[:, :, p]
         img_g = img_g / img.shape[2]
     return img_g
@@ -23,7 +23,7 @@ def seamsToRealIndex(shape,seams):
     '''
     h,w = shape
     allSeams = np.array([])
-    toAdd = np.array([w*x for x in xrange(h)])
+    toAdd = np.array([w*x for x in range(h)])
     for seam in seams:
         allSeams = np.append(allSeams,seam+toAdd)
     return allSeams.astype(np.int)
@@ -47,7 +47,7 @@ def drawSeamsInImage(img, seams):
     if (np.ndim(img) == 3):
         h, w, p = img.shape
         res = img.copy()
-        for i in xrange(p):
+        for i in range(p):
             res[:, :, i] = drawSeamGray(img[:, :, i], seams)
         return res
     return drawSeamGray(img, seams)

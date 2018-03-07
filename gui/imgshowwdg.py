@@ -19,7 +19,7 @@ except:
     from PyQt4 import QtOpenGL as gl
 
     withGL = True
-import QtTool as tool
+import gui.QtTool as tool
 
 
 class ImgEntry:

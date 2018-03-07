@@ -93,7 +93,7 @@ class StdEffect(QtCore.QObject):
         img_g = img
         if (np.ndim(img) == 3):
             img_g = img[:, :, 1]
-            for p in xrange(1, img.shape[2]):
+            for p in range(1, img.shape[2]):
                 img_g = img_g + img[:, :, p]
             img_g = img_g / img.shape[2]
         img_div = ML.absDivergence(img_g)
@@ -104,7 +104,7 @@ class StdEffect(QtCore.QObject):
             Adds a description to the mainWdg
             @param text The description text
         '''
-        label = gui.QLabel(text.decode("utf-8"))
+        label = gui.QLabel(text)
         label.setWordWrap(True)
         sizePoly = label.sizePolicy()
         sizePoly.setHorizontalPolicy(gui.QSizePolicy.Ignored)
@@ -283,7 +283,7 @@ class ShowSeams(StdEffect):
         else:
             return None  # Picture cannot be edit
         seams = None
-        if (data.has_key('mask')):
+        if 'mask' in data:
             mask = data['mask']
             seams = self._findSeams(img, mask)
             if (not len(seams) == 0):
@@ -362,7 +362,7 @@ class RemoveSeamImage(StdEffect):
         img = data['img']
         diff = self.sbox.value()
         res = None
-        if (data.has_key('mask')):
+        if 'mask'  in data:
             mask = data['mask']
             res = self._maskremove(img, mask, ML.removeSeams)
         if (res is None):
@@ -387,7 +387,7 @@ class RemoveSeamImage(StdEffect):
         efunc[mask > 0] = -abs(efunc.max()) * h * w # Be as little as possible so it cannot be reached otherwise.
 
         res = img
-        for i in xrange(diff):
+        for i in range(diff):
             self.progress.emit(i * 100 / diff)
             QtCore.QCoreApplication.processEvents()
             seam = ML.findOptimalSeam(efunc,stopFunc=self._haveToQuit)
@@ -407,7 +407,7 @@ class RemoveSeamImage(StdEffect):
             return None  # Picture cannot be edit
         res = img
         s = self.getEnergyFunction(img)
-        for i in xrange(diffcount):
+        for i in range(diffcount):
             if (self._haveToQuit()):
                 return
             self.progress.emit(i * 100 / diffcount)
@@ -476,7 +476,7 @@ class RemoveSeamGradient(ShowSeams):
         overl = self.olbox.value()
 
         seams = []
-        if (data.has_key('mask')):
+        if 'mask' in data:
             mask = data['mask']
             seams = self._findSeams(img, mask)
         if self._haveToQuit():
@@ -542,7 +542,7 @@ class ShowMaskOnly(StdEffect):
         self._addStretch()
 
     def _applyImage(self, data):
-        if (data.has_key('mask')):
+        if 'mask' in data:
             mask = data['mask']
             return (255 * mask).astype("uint8")
         return data['img']

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # Functions  for Poisson-Reconstruction
 import numpy as np
-from MyFilter import myfilter as filter
+from ImgLib.MyFilter import myfilter as filter
 # Some explanations: http://eric-yuan.me/poisson-blending/
 
 def jacobi(A, b, N=25, x=None, progressFunc = None, stopFunc=None):
@@ -23,7 +23,7 @@ def jacobi(A, b, N=25, x=None, progressFunc = None, stopFunc=None):
     D = np.diag(A)
     R = A - np.diagflat(D)
     # Iterate for N times
-    for i in xrange(N):
+    for i in range(N):
         if (progressFunc):
             progressFunc(i*100/N)
         if stopFunc and stopFunc():
@@ -63,15 +63,15 @@ def poissonInsertMask(m, mask, div, iterations=20, progressFunc = None, stopFunc
     N = len(r)
     idx = np.zeros(mask.shape, dtype=np.uint32)
 
-    for i in xrange(N):
+    for i in range(N):
         idx.itemset((r.item(i), c.item(i)), i + 1)
 
     b_r = np.zeros(N)
 
     A = np.zeros((N, N))
-    for i in xrange(N):
+    for i in range(N):
         if (progressFunc):
-            progressFunc(i*100/(2*N))
+            progressFunc(i*100//(2*N))
         if stopFunc and stopFunc():
             return
         y, x = r.item(i), c.item(i)  
@@ -106,7 +106,7 @@ def poissonInsertMask(m, mask, div, iterations=20, progressFunc = None, stopFunc
             x = jacobi(A, b_r, x=guess, N=iterations,  stopFunc = stopFunc) 
     if stopFunc and stopFunc():
         return None
-    for i in xrange(N):
+    for i in range(N):
         yy, xx = r.item(i), c.item(i)
         v = m[yy, xx] - x[i]  
         

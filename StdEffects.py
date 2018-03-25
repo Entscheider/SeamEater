@@ -365,9 +365,9 @@ class RemoveSeamImage(StdEffect):
         if 'mask'  in data:
             mask = data['mask']
             res = self._maskremove(img, mask, ML.removeSeams)
-        if (res is None):
+        if res is None:
             res = self._wholeremove(img, diff, ML.removeSeams)
-        if (len(res) == 0):
+        if len(res) == 0:
             return None
         return res
 

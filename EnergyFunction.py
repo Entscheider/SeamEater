@@ -19,7 +19,7 @@ def absEnergyFunc(img):
     @return Numpy array with the energy
     '''
     img_g = __makeGray(img)
-    return ML.absDivergence(img_g)   # L1-Gradient-Norm
+    return ML.absDivergence(img_g).astype(np.float64)   # L1-Gradient-Norm
 
 
 def cornerHarrisFunc(img):
@@ -29,7 +29,7 @@ def cornerHarrisFunc(img):
     @return Numpy array with the energy
     '''
     img_g = __makeGray(img).astype("uint8")
-    return cv2.cornerHarris(img_g, 2, 3, 0.04)
+    return cv2.cornerHarris(img_g, 2, 3, 0.04).astype(np.float64)
 
 
 def preCornerDetectFunc(img):
@@ -39,7 +39,7 @@ def preCornerDetectFunc(img):
     @return Numpy array with the energy
     '''
     img_g = __makeGray(img).astype("uint8")
-    return cv2.preCornerDetect(img_g, 5)
+    return cv2.preCornerDetect(img_g, 5).astype(np.float64)
 
 def l2gradientFunc(img):
     '''
@@ -50,7 +50,7 @@ def l2gradientFunc(img):
     '''
     img_g = __makeGray(img)
     gy, gx = np.gradient(img_g)
-    return np.sqrt(gy**2+gx**2)
+    return np.sqrt(gy**2+gx**2).astype(np.float64)
 
 def laplaceFunc(img):
     '''
@@ -58,7 +58,7 @@ def laplaceFunc(img):
     @param img The Image
     @return Numpy array with the energy
     '''
-    return laplace_div(__makeGray(img))
+    return laplace_div(__makeGray(img)).astype(np.float64)
 
 export = {
     "AbsDiv": absEnergyFunc,

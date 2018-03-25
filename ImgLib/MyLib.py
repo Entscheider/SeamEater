@@ -1,7 +1,15 @@
 # -*- coding: utf-8 -*-
 # Important functions for  Seam-Paper
 import numpy as np
-from Poisson import poissonInsertMask, laplace_div
+from ImgLib.Poisson import poissonInsertMask, laplace_div
+from typing import Callable
+
+findOptimalSeam = None
+try:
+    import ImgLib.MyLib_Cy as Cy
+    findOptimalSeam = Cy.findOptimalSeam
+except:
+    pass
 
 
 def absDivergence(img):
@@ -15,7 +23,7 @@ def absDivergence(img):
     return np.abs(grad[0]) + np.abs(grad[1])
 
 
-def findOptimalSeam(s, stopFunc = None):
+def findOptimalSeam_Py(s: np.ndarray, stopFunc: Callable[[],bool] = None):
     """
     Finds optimal adjacent pixels in every row.
     These pixels minimize the energy s.
@@ -27,37 +35,40 @@ def findOptimalSeam(s, stopFunc = None):
             the algorithm has stopped, None will be returned.
     """
     M, N = s.shape
+
     C = np.zeros((M, N))
-    Pointer = [[0 for x in xrange(0, N)] for y in xrange(0, M)]
+    Pointer = np.zeros((M, N, 2), dtype=np.int64)
     # Fill first row with 0
-    for c in xrange(0, N):
-        C[0, c] = s[0, c] 
+    for c in range(0, N):
+        C[0, c] = s[0, c]
     # Then compute for every column in every row the best neighbor above
-    for r in xrange(1, M):  
-        for c in xrange(N): 
-            if (stopFunc and stopFunc()):
+    for r in range(1, M):
+        for c in range(N):
+            if stopFunc and stopFunc():
                 return None
-            left = max(c - 1, 0)  
-            right = min(N - 1, c + 1) 
-            j = left + C[r - 1, left:right + 1].argmin()  
+            left = max(c - 1, 0)
+            right = min(N - 1, c + 1)
+            j = left + C[r - 1, left:right + 1].argmin()
             # Set the energy
-            C[r, c] = C[r - 1, j] + s[r, c]  
+            C[r, c] = C[r - 1, j] + s[r, c]
             # Set the neighbor
-            Pointer[r][c] = (r - 1, j)  
+            Pointer[r, c] = (r - 1, j)
     # Find the way with the lowest energy
-    minPointer = C[M - 1, :].argmin()
-    if (C[M - 1, minPointer] == np.inf):
+    minCol = C[M - 1, :].argmin()
+    if C[M - 1, minCol] == np.inf:
         return None
     # Creating the result
-    seam = np.zeros(M, dtype=np.int)
-    seam[M - 1] = minPointer
-    minPointer = Pointer[M - 1][minPointer]
-    for y in xrange(-M + 1, 0):
+    seam = np.zeros(M, dtype=np.int64)
+    seam[M - 1] = minCol
+    minPointer = Pointer[M - 1, minCol]
+    for y in range(-M + 1, 0):
         prevR, row = minPointer
         seam[prevR] = row
-        minPointer = Pointer[prevR][row]
+        minPointer = Pointer[prevR, row]
     return seam
 
+if findOptimalSeam is None:
+    findOptimalSeam = findOptimalSeam_Py
 
 def findTopDisjointSeams(s, count, progressFunc=None, bigvalue=np.inf, stopFunc = None):
     """
@@ -74,20 +85,20 @@ def findTopDisjointSeams(s, count, progressFunc=None, bigvalue=np.inf, stopFunc 
     """
     (h, w) = s.shape
     shapes = []
-    toAdd = [w * i for i in xrange(h)]
+    toAdd = [w * i for i in range(h)]
 
     def biggerSeam(seam, array):
         tmp = array.flatten()
         tmp[seam + toAdd] = bigvalue
         return tmp.reshape((h, w))
 
-    for pack in xrange(count):
+    for pack in range(count):
         if stopFunc and stopFunc():
             return []
-        if (not progressFunc is None):
+        if not progressFunc is None:
             progressFunc((pack + 1) * 100 / count)
         seam = findOptimalSeam(s, stopFunc)
-        if (seam is None):
+        if seam is None:
             break
         shapes.append(seam)
         s = biggerSeam(seam, s)
@@ -111,27 +122,27 @@ def removeSeams(img, seams):
     @param seams a list of seams or just one.
     @return A image where the seams are removed.
     """
-    if (type(seams) == np.ndarray):
+    if type(seams) == np.ndarray:
         seams = [seams]
     def removeGray(img):
         h, w = img.shape
-        toAdd = np.array([w * x for x in xrange(0, h)])
+        toAdd = np.array([w * x for x in range(0, h)])
         toDelete = np.array([])
         for seam in seams:
             toDelete = np.append(toDelete, seam + toAdd)
         nimg = np.delete(img, toDelete)
         nimg.shape = (h, w - len(seams))
         return nimg
-    if (type(seams) == np.ndarray):
+    if type(seams) == np.ndarray:
         seams = [seams]
-    if (np.ndim(img) == 3):
+    if np.ndim(img) == 3:
             h, w, p = img.shape
-            toAdd = np.array([w * x for x in xrange(0, h)])
+            toAdd = np.array([w * x for x in range(0, h)])
             toAppend = np.array([])
             for seam in seams:
                 toAppend = np.append(toAppend, (seam + toAdd) * p)
             toDel = np.array([])
-            for k in xrange(0, p):
+            for k in range(0, p):
                 toDel = np.append(toDel, toAppend + k)
             nimg = np.delete(img, toDel)
             nimg.shape = (h, w - len(seams), p)
@@ -152,7 +163,7 @@ def removeSeamsInGradient(img, seams, it=20, mixCount=15, progressFunc = None, s
     @param stopFunc Function. Stops the algorithm when evaluated to true. (-> boolean)
     @return The reconstructed picture. None, if stopped.
     '''
-    if (type(seams) == np.ndarray):
+    if type(seams) == np.ndarray:
         seams = [seams]
     def removeGray(img, progressFunc):
         h, w = img.shape
@@ -160,12 +171,12 @@ def removeSeamsInGradient(img, seams, it=20, mixCount=15, progressFunc = None, s
         img_rem = removeSeams(img, seams)
         mask = np.zeros((h, w))
         for seam in seams:
-            for i in xrange(h):
+            for i in range(h):
                 pos = seam[i]
-                for k in xrange(-mixCount, mixCount):
-                    if (stopFunc and stopFunc()):
+                for k in range(-mixCount, mixCount):
+                    if stopFunc and stopFunc():
                         return None
-                    if (pos + k >= 0 and pos + k < w ):
+                    if pos + k >= 0 and pos + k < w:
                         if mask[i, pos + k] == 0:
                             mask[i, pos + k] = 1 - abs(k) * 1.0 / (mixCount + 1)
                         else:
@@ -173,12 +184,12 @@ def removeSeamsInGradient(img, seams, it=20, mixCount=15, progressFunc = None, s
         mask = removeSeams(mask, seams)
         return poissonInsertMask(img_rem, mask, img_div, it, progressFunc, stopFunc)
 
-    if (np.ndim(img) == 3):
+    if np.ndim(img) == 3:
         h, w, p = img.shape
         res = np.zeros((h, w - len(seams), p))
         nprogressFunc = None
-        for i in xrange(p):
-            if (progressFunc):
+        for i in range(p):
+            if progressFunc:
                 nprogressFunc = lambda k: progressFunc(i*100/p+k/p)
             res[:, :, i] = removeGray(img[:, :, i], nprogressFunc)
         return res
@@ -192,25 +203,25 @@ def duplicateSeams(img, seams):
       @param img The Image
       @param seams the list of seams.
     """
-    if (len(seams) == 0):
+    if len(seams) == 0:
         return img
     def duplicateGray(img):
         h, w = img.shape
-        toAdd = np.array([w * x for x in xrange(0, h)])
+        toAdd = np.array([w * x for x in range(0, h)])
         res = np.array([])
         for seam in seams:
             res = np.concatenate((res, seam + toAdd))
         res = res.astype("int")
-        not_edge_right = ((res+1)% w != 0).astype("int") # Points at the left edge of the image => do not interpolate left
-        not_edge_left = (res% w != 0).astype("int") # Points at the right edge => do not interpolate right
+        not_edge_right = ((res+1) % w != 0).astype("int") # Points at the left edge of the image => do not interpolate left
+        not_edge_left = (res % w != 0).astype("int") # Points at the right edge => do not interpolate right
         img = img.flatten()
         nimg = np.insert(img, res, img[res]/3+img[res-not_edge_left]/3+img[res+not_edge_right]/3)  
         nimg.shape = (h, w + len(seams))
         return nimg
-    if (np.ndim(img) == 3):
+    if np.ndim(img) == 3:
         h, w, p = img.shape
         res = np.zeros((h, w + len(seams), p))
-        for k in xrange(p):
+        for k in range(p):
             pic = img[:, :, k]
             pic = duplicateGray(pic)
             res[:, :, k] = pic  # 256-pic 
@@ -236,16 +247,16 @@ def resizeConventional(img, newWidth, newHeight):
         res = np.zeros((newHeight, newWidth))
         factorH = h * 1.0 / newHeight
         factorW = w * 1.0 / newWidth
-        for x in xrange(newWidth):
-            for y in xrange(newHeight):
+        for x in range(newWidth):
+            for y in range(newHeight):
                 res[y, x] = nearestNeighbour(img_g, factorH * y, factorW * x)
         return res
 
-    if (np.ndim(img) == 2):
+    if np.ndim(img) == 2:
         return resizeBW(img)
     h, w, p = img.shape
     res = np.zeros((newHeight, newWidth, p))
-    for i in xrange(p):
+    for i in range(p):
         res[:, :, i] = resizeBW(img[:, :, i])
     return res
 
@@ -256,10 +267,10 @@ def rotateMirror(img):
     @param img The image
     @return the transposed image.
     '''
-    if (np.ndim(img) == 3):
+    if np.ndim(img) == 3:
         h, w, p = img.shape
         res = np.zeros((w, h, p))
-        for i in xrange(p):
+        for i in range(p):
             res[:, :, i] = img[:, :, i].transpose()
         return res
     return img.transpose()
@@ -273,7 +284,7 @@ def seamEnergy(energy, seam):
     @return the energy of the seam.
     '''
     h, w = energy.shape
-    toAdd = [r * w for r in xrange(h)]
+    toAdd = [r * w for r in range(h)]
     return energy.flatten()[seam + toAdd].sum()
 
 
@@ -286,17 +297,17 @@ def retargetingImage(img, xCount, yCount, energyFactory, progressFunc=None, stop
     @param yCount The number of rows to delete.
     @param energyFactory A function computing the energy function (numpy array) of an image (numpy image -> numpy image)
     @param progressFunc Will be called if progress happens. (int ->)
-    @param stopFunc  Function, if stopFunct()==True then the algorithm stops. (-> boolean)
+    @param stopFunc  Function, if stopFunc()==True then the algorithm stops. (-> boolean)
     @return A image decreasing the width and height by xCount and yCount.
     '''
     h = img.shape[0]
     w = img.shape[1]
     costMatrix = np.zeros((yCount + 1, xCount + 1)) # Contains the cost of each step
-    imageMatrix = [[None for x in xrange(xCount + 1)] for y in xrange(yCount + 1)] # Contains all calculated images
+    imageMatrix = [[None for x in range(xCount + 1)] for y in range(yCount + 1)] # Contains all calculated images
     imageMatrix[0][0] = img
-    for y in xrange(yCount + 1):
-        for x in xrange(xCount + 1):
-            if (stopFunc and stopFunc()):
+    for y in range(yCount + 1):
+        for x in range(xCount + 1):
+            if stopFunc and stopFunc():
                 return
             energyAbove = None #Energy by removing seam within image above in imageArray
             seamAbove = None # Seam for removing in the image above
@@ -312,7 +323,7 @@ def retargetingImage(img, xCount, yCount, energyFactory, progressFunc=None, stop
                 energyFunc = energyFactory(img)
                 seamLeft = findOptimalSeam(energyFunc)
                 energyLeft = costMatrix[y, x - 1] + seamEnergy(energyFunc, seamLeft)
-            if (progressFunc):
+            if progressFunc:
                 progressFunc((x + (y * (xCount + 1))) * 100 / ((xCount + 1) * (yCount + 1)))
             if ((not energyAbove is None and not energyLeft is None and energyAbove <= energyLeft) or (
                 not energyAbove is None and energyLeft is None)): #  Better removing horizontal (less energy)

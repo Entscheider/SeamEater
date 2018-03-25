@@ -34,7 +34,7 @@ def myfilter(img, mask):
     if (np.ndim(img)==3):
         h,w,p = img.shape
         res = np.zeros((h,w,p))
-        for j in xrange(p):
+        for j in range(p):
             res[:,:,j] = myfilter_intern(img[:,:,j])
         return res
     else:

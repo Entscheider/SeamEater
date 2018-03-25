@@ -8,8 +8,8 @@ except:
 
     qtver = 4
     guig = gui
-from imgshowwdg import ImgShowWdg
-from actionWdg import ActionWdg
+from gui.imgshowwdg import ImgShowWdg
+from gui.actionWdg import ActionWdg
 import numpy as np
 
 from scipy.misc import imsave as imwrite
@@ -21,8 +21,7 @@ class MainWindow(gui.QMainWindow):
         gui.QMainWindow.__init__(self)
         self.setWindowTitle("SeamEater")
         self.setAcceptDrops(True)
-        if (qtver == 4):
-            self.setUnifiedTitleAndToolBarOnMac(True)
+        self.setUnifiedTitleAndToolBarOnMac(True)
         mwdg = gui.QWidget()
         self.setCentralWidget(mwdg)
         self.imgwdg = ImgShowWdg(self)
@@ -38,11 +37,11 @@ class MainWindow(gui.QMainWindow):
         return self.__energyFunctions
 
     def setEnergyFactoryMap(self, map):
-        self.__energyFunctions = map.values()
+        self.__energyFunctions = list(map.values())
         for key in map:
             val = map[key]
             self.__choosenFunctionBox.addItem(key, val)
-        self.__choosenFunctionBox.setCurrentIndex(len(map) - 1)
+        self.__choosenFunctionBox.setCurrentIndex(0)
 
     def dragEnterEvent(self, e):
         if (e.mimeData().hasUrls()):

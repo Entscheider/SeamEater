@@ -13,7 +13,7 @@ except:
 def qimage2numpy(qimg):
     h = qimg.height()
     w = qimg.width()
-    ow = qimg.bytesPerLine() * 8 / qimg.depth()
+    ow = qimg.bytesPerLine() * 8 // qimg.depth()
     d = 0
     if qimg.format() in (QImage.Format_ARGB32_Premultiplied,
                            QImage.Format_ARGB32,
@@ -23,11 +23,12 @@ def qimage2numpy(qimg):
         d = 1
     else:
         raise ValueError("unsupported qimage format")
-    buf=0
+
     if (qt_ver==4):
         buf = qimg.bits().asstring(qimg.numBytes())
     else:
         buf = qimg.bits().asstring(qimg.byteCount())
+
     res = np.frombuffer(buf, 'uint8')
     res = res.reshape((h,ow,d)).copy()
     if w != ow:
@@ -40,15 +41,9 @@ def qimage2numpy(qimg):
         res[:,:,2] = tmp
     return res
 
-bgra_dtype = np.dtype({'b': (np.uint8, 0),
-                          'g': (np.uint8, 1),
-                          'r': (np.uint8, 2),
-                          'a': (np.uint8, 3)})
-
 def numpy2qimage(array):
-    img = None
     if np.ndim(array) == 2:
-        img = np.zeros([array.shape[0],array.shape[1],3],dtype=bgra_dtype)
+        img = np.zeros([array.shape[0],array.shape[1],3], dtype=np.uint8)
         img[:,:,0] = array
         img[:,:,1] = array
         img[:,:,2] = array
@@ -64,23 +59,22 @@ def numpy2qimage(array):
             img[:,:,1] = array[:,:,0]
             img[:,:,2] = array[:,:,0]
         else:
-            img[:,:,2] = array[:,:,0]
-            img[:,:,1] = array[:,:,1]
-            img[:,:,0] = array[:,:,2]
+            img[:,:,:3] = array[:,:,(2,1,0)]
             if d == 4:
                 img[:,:,3] = array[:,:,3]
             else:
                 img[:,:,3] = 255
     else:
         raise ValueError("can only convert 2D and 3D arrays")
-    fmt = None
+
     if img.shape[2] == 3:
-        fmt =  QImage.Format_RGB32
+        fmt = QImage.Format_RGB32
     elif img.shape[2] == 4:
-        fmt =  QImage.Format_ARGB32
+        fmt = QImage.Format_ARGB32
     else:
         raise ValueError("unsupported image depth")
-    res =  QImage(img.data, img.shape[1], img.shape[0], fmt)
+
+    res = QImage(img.data, img.shape[1], img.shape[0], fmt)
     res.ndarray = img
     return res
 

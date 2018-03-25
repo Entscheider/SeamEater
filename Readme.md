@@ -6,11 +6,14 @@ Seameater is a python program implementing some algorithm, which are described o
 - Enlarge/Downsize a picture by enlarging/downsizing the background
 - Amplify the content of picture
 
-The application depends on Numpy and PyQt4 or PyQt5. Because it is written in pure Python, be warned: it is not as fast as you may wish. However, some code may be helpful for analysis.
+The application depends on Numpy and PyQt4 or PyQt5. Because it is mainly written in pure Python, be warned: it is not as fast as you may wish. However, some code may be helpful for analysis.
 
 ## How to run
 Clone the repository and install the dependencies if necessary.
-Then go to the source directory and run `python2 main.py`.
+Then go to the source directory and run `python3 main.py`.
+
+It is possible to use a faster seam finding algorithm by compiling the CPython-Extension.
+To do that, you have to run `python3 setup.py build_ext  --inplace` and restart the application.
 
 ## Screenshots
 * Enlarge image
@@ -21,4 +24,4 @@ Then go to the source directory and run `python2 main.py`.
 ![](https://raw.githubusercontent.com/Entscheider/SeamEater/master/pic/screenshot/screenshot_content_amplification.png)
 
 ## License
-The code is licenses under GPLv3.
+The code is licensed under GPLv3.

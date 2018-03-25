@@ -19,7 +19,7 @@ except:
     from PyQt4 import QtOpenGL as gl
 
     withGL = True
-import QtTool as tool
+import gui.QtTool as tool
 
 
 class ImgEntry:
@@ -32,7 +32,7 @@ class ImgEntry:
         return self.pixmap
 
     def getNPArray(self):
-        if (self.imgNP is None):
+        if self.imgNP is None:
             return tool.qimage2numpy(self.pixmap.toImage())
         return self.imgNP
 
@@ -64,7 +64,7 @@ class PainableItem(gui.QGraphicsPixmapItem):
         return self.__radius
 
     def mousePressEvent(self, event):
-        if (self.__pixmap):
+        if self.__pixmap:
             self.__pressing = True
             self.__painter = guig.QPainter(self.__pixmap)
             self.__painter.setBrush(guig.QBrush(guig.QColor(0, 0, 0)))
@@ -74,7 +74,7 @@ class PainableItem(gui.QGraphicsPixmapItem):
         self.__pixmap = pixmap
 
     def mouseMoveEvent(self, ev):
-        if (self.__pressing and self.__painter and self.__pixmap):
+        if self.__pressing and self.__painter and self.__pixmap:
             x = int(ev.pos().x())
             y = int(ev.pos().y())
             r = self.__radius
@@ -101,7 +101,7 @@ class ImgShowWdg(gui.QGraphicsView):
         self.__maskPixmapItem = PainableItem()
         scene.addItem(self.__maskPixmapItem)
         self.setScene(scene)
-        if (withGL):
+        if withGL:
             self.setViewport(gl.QGLWidget())
         gui.QApplication.instance().aboutToQuit.connect(self.deleteLater)
         self.__undoCount = 10
@@ -113,7 +113,7 @@ class ImgShowWdg(gui.QGraphicsView):
         self.fitInView(self.__pixmapItem, QtCore.Qt.KeepAspectRatio)
 
     def __currentEntry(self):
-        if (self.__currentImgEntry < 0):
+        if self.__currentImgEntry < 0:
             return None
         return self.__imgEntries[self.__currentImgEntry]
 
@@ -123,19 +123,19 @@ class ImgShowWdg(gui.QGraphicsView):
         self.__imgEntries.append(entry)
         self.__currentImgEntry += 1
         diff = len(self.__imgEntries) - self.__undoCount
-        if (diff > 0):
+        if diff > 0:
             self.__imgEntries = self.__imgEntries[diff:]
             self.__currentImgEntry -= diff
         return entry
 
     def undo(self):
-        if (self.__currentImgEntry > 0):
+        if self.__currentImgEntry > 0:
             self.__currentImgEntry = self.__currentImgEntry - 1
             self.__emitSizeChanged()
             self.updatePixmaps()
 
     def redo(self):
-        if (self.__currentImgEntry + 1 >= len(self.__imgEntries)):
+        if self.__currentImgEntry + 1 >= len(self.__imgEntries):
             return
         self.__currentImgEntry = self.__currentImgEntry + 1
         self.__emitSizeChanged()
@@ -143,43 +143,43 @@ class ImgShowWdg(gui.QGraphicsView):
 
     def updatePixmaps(self):
         entry = self.__currentEntry()
-        if (entry):
+        if entry:
             self.__pixmapItem.setPixmap(entry.getPixmap())
             self.__maskPixmapItem.setInternPixmap(entry.getPaintingPixmap())
             self.fitInView(self.__pixmapItem, QtCore.Qt.KeepAspectRatio)
 
     def getPixmap(self):
         entry = self.__currentEntry()
-        if (entry is None):
+        if entry is None:
             return None
         return entry.getPixmap()
 
     def getNPArray(self):
         entry = self.__currentEntry()
-        if (entry is None):
+        if entry is None:
             return None
         nparray = entry.getNPArray()
-        if (nparray is None):
+        if nparray is None:
             return tool.qimage2numpy(entry.getPixmap().toImage())
         return nparray
 
     def setImageFromNP(self, nparray, entry=None):
-        if (entry is None):
+        if entry is None:
             entry = self.__newEntry()
         self.setQImage(tool.numpy2qimage(nparray), entry)
         entry.setNpArray(nparray)
 
     def setQImage(self, image, entry=None):
-        if (entry is None):
+        if entry is None:
             entry = self.__newEntry()
         self.setPixmap(guig.QPixmap.fromImage(image), entry)
         entry.setNpArray(None)
 
     def __clearPaintingPixmap(self):
         entry = self.__currentEntry()
-        if (entry is None):
+        if entry is None:
             return
-        if (entry.getPixmap()):
+        if entry.getPixmap():
             pixmap = guig.QPixmap(entry.getPixmap().width(), entry.getPixmap().height())
             pixmap.fill(guig.QColor(0, 0, 0, 1)) 
             entry.setPaintingPixmap(pixmap)
@@ -194,13 +194,13 @@ class ImgShowWdg(gui.QGraphicsView):
 
     def getPaintingPixmap(self):
         entry = self.__currentEntry()
-        if (entry is None):
+        if entry is None:
             return None
         return entry.getPaintingPixmap()
 
     def getPaintintNPImage(self):
         entry = self.__currentEntry()
-        if (entry is None or entry.getPaintingPixmap() is None):
+        if entry is None or entry.getPaintingPixmap() is None:
             return None
         npimg = tool.qimage2numpy(entry.getPaintingPixmap().toImage().convertToFormat(guig.QImage.Format_ARGB32))
         return (npimg[:, :, 3] > 1).astype("uint8")
@@ -213,11 +213,11 @@ class ImgShowWdg(gui.QGraphicsView):
 
     def __emitSizeChanged(self):
         entry = self.__currentEntry()
-        if (entry and entry.getPixmap()):
+        if entry and entry.getPixmap():
             self.sizeChanged.emit(entry.getPixmap().width(), entry.getPixmap().height())
 
     def setPixmap(self, pixmap, entry=None):
-        if (entry is None):
+        if entry is None:
             entry = self.__newEntry()
         entry.setPixmap(pixmap)
         self.__pixmapItem.setPixmap(pixmap)

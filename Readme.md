@@ -12,7 +12,7 @@ The application depends on Numpy and PyQt4 or PyQt5. Because it is mainly writte
 Clone the repository and install the dependencies if necessary.
 Then go to the source directory and run `python3 main.py`.
 
-It is possible to use a faster seam finding algorithm by compiling the CPython-Extension.
+It is possible to use a faster seam finding algorithm by compiling the Cython-Extension.
 To do that, you have to run `python3 setup.py build_ext  --inplace` and restart the application.
 
 ## Screenshots

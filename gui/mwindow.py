@@ -12,8 +12,8 @@ from gui.imgshowwdg import ImgShowWdg
 from gui.actionWdg import ActionWdg
 import numpy as np
 
-from scipy.misc import imsave as imwrite
-#from scipy.ndimage import imread
+# from imageio import imread
+from imageio import imsave as imwrite
 
 
 class MainWindow(gui.QMainWindow):
@@ -128,4 +128,7 @@ class MainWindow(gui.QMainWindow):
         if (len(filename) == 0):
             return
         #self.imgwdg.getPixmap().save(filename) # Use Qt for saving images.
-        imwrite(filename, self.imgwdg.getNPArray()) # Use Scipy for saving images.
+        try:
+            imwrite(filename, self.imgwdg.getNPArray()) # Use Scipy for saving images.
+        except Exception as e:
+            gui.QMessageBox.critical(self, "Exception", "An error is thrown while saving: {}".format(e))
